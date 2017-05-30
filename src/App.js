@@ -1,20 +1,52 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import axios from 'axios'
+
+import MainMenu from './components/main-menu';
+import SearchBar from './components/search-bar';
+import SearchResult from './components/search-result';
+
 import './App.css';
 
 class App extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      selectedBeerStyle: null,
+      beerStylesList: []
+    }
+  }
+
+  componentDidMount() {
+    let instance = axios.create({
+      baseURL: 'http://api.receitasdecerveja.com.br/',
+      timeout: 100000,
+    });
+    instance.get('beerStyles').then((response) => {
+      this.setState({beerStylesList: response.data});
+    }).catch((error) => {
+      console.log('Unable to get list of beer styles')
+    });
+  }
+
+  onBeerStyleSelected = (value) => {
+    this.setState({
+      selectedBeerStyle: this.state.beerStylesList.find((beer_style) => {
+        return beer_style.key === value
+      })
+    })
+  }
+
   render() {
     return (
       <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>Welcome to React</h2>
-        </div>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+        <MainMenu />
+        <SearchBar
+          beerStylesList={this.state.beerStylesList}
+          onBeerStyleSelected={this.onBeerStyleSelected} />
+        <SearchResult
+          selectedBeerStyle={this.state.selectedBeerStyle} />
       </div>
-    );
+    )
   }
 }
 
